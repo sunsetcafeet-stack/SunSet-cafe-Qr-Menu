@@ -4390,7 +4390,10 @@
                     reader.onload = async () => {
                         try {
                             const base64 = reader.result.split(',')[1];
-                            const path = `images/${Date.now()}_${file.name}`;
+                            const itemName = fName.value.trim() || 'upload';
+                            const safeName = itemName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+                            const ext = file.name.split('.').pop() || 'webp';
+                            const path = `images/${safeName}.${ext}`;
                             const url =
                                 `https://api.github.com/repos/${CONFIG.repoOwner}/${CONFIG.repoName}/contents/${path}`;
                             const resp = await _fetchWithRetry(url, {
