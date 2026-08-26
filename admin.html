@@ -3735,12 +3735,27 @@
         }
 
         // ============================================================
-        // GITHUB API
+        // GITHUB API (with retry + exponential backoff)
         // ============================================================
+        async function _fetchWithRetry(url, options = {}, retries = 2, delay = 1500) {
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const ctrl = new AbortController();
+                    const timeout = setTimeout(() => ctrl.abort(), 15000);
+                    const resp = await fetch(url, { ...options, signal: ctrl.signal });
+                    clearTimeout(timeout);
+                    return resp;
+                } catch (err) {
+                    if (i < retries) await new Promise(r => setTimeout(r, delay * (i + 1)));
+                    else throw err;
+                }
+            }
+        }
+
         async function fetchFileFromGitHub() {
             const url =
                 `https://api.github.com/repos/${CONFIG.repoOwner}/${CONFIG.repoName}/contents/${CONFIG.indexFileName}`;
-            const resp = await fetch(url, {
+            const resp = await _fetchWithRetry(url, {
                 headers: { Authorization: `token ${token}` }
             });
             if (!resp.ok) {
@@ -3771,7 +3786,7 @@
                 content: encoded,
                 sha: sha
             };
-            const resp = await fetch(url, {
+            const resp = await _fetchWithRetry(url, {
                 method: 'PUT',
                 headers: {
                     Authorization: `token ${token}`,
@@ -4378,7 +4393,7 @@
                             const path = `images/${Date.now()}_${file.name}`;
                             const url =
                                 `https://api.github.com/repos/${CONFIG.repoOwner}/${CONFIG.repoName}/contents/${path}`;
-                            const resp = await fetch(url, {
+                            const resp = await _fetchWithRetry(url, {
                                 method: 'PUT',
                                 headers: {
                                     Authorization: `token ${token}`,
@@ -4818,7 +4833,7 @@
             });
         } catch (_) {}
 
-        // Poll every 10 seconds for fast sync
+        // Poll every 120 seconds (reduced from 30s to prevent API overload)
         setInterval(() => {
             const oldHash = menuData.reduce((s, i) => s + i.id + i.name + i.price, '');
             loadMenu().then(() => {
@@ -4826,8 +4841,8 @@
                 if (oldHash !== newHash) {
                     showToast('🔄 Menu refreshed from GitHub', 'info');
                 }
-            });
-        }, 30000);
+            }).catch(() => {});
+        }, 120000);
 
         console.log('✅ All systems ready.');
         console.log('📌 Detail modal Edit button now correctly opens the edit form.');

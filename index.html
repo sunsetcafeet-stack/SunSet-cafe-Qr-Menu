@@ -665,9 +665,6 @@
             inset: 0;
             z-index: 0;
             background: url('images/bg1.webp') center 30%/cover no-repeat;
-            transform: scale(1.0);
-            transition: transform 14s var(--ease-out-expo);
-            will-change: transform;
             filter: saturate(0.9) brightness(0.7);
         }
         @media (max-width: 576px) {
@@ -675,9 +672,7 @@
                 background: url('images/phone_bg.webp') center 30%/cover no-repeat;
             }
         }
-        .hero-section:hover .hero-bg-image {
-            transform: scale(1.03);
-        }
+        /* Hero hover zoom disabled for performance */
         .hero-bg-image::after {
             content: '';
             position: absolute;
@@ -2526,7 +2521,6 @@
         }
         .menu-card {
             animation: cardEntrance 0.45s var(--ease-out-expo) both;
-            will-change: transform, opacity;
         }
         .menu-grid.grid-view .menu-card:nth-child(1) { animation-delay: 0.02s; }
         .menu-grid.grid-view .menu-card:nth-child(2) { animation-delay: 0.05s; }
@@ -2540,7 +2534,6 @@
         /* ===== ENHANCED CARD HOVER EFFECTS ===== */
         .menu-card {
             transition: transform 0.35s var(--ease-spring), box-shadow 0.35s var(--ease-smooth), border-color 0.35s var(--ease-smooth);
-            will-change: transform;
         }
         .menu-card:hover {
             transform: translateY(-5px);
@@ -2676,13 +2669,14 @@
             0%, 100% { box-shadow: 0 4px 16px rgba(212, 175, 55, 0.1); }
             50% { box-shadow: 0 4px 24px rgba(212, 175, 55, 0.2); }
         }
+        /* Badge pulse removed for performance */
         .menu-card .badge-tag {
-            animation: badgePulse 2s ease-in-out infinite;
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.1);
         }
 
         /* ===== SMOOTH SCROLL INDICATOR ===== */
         .hero-scroll-indicator {
-            animation: bounceDown 2.5s ease-in-out infinite;
+            animation: bounceDown 3.5s ease-in-out infinite;
         }
 
         /* ===== ENHANCED LIST VIEW HOVER ===== */
@@ -2696,16 +2690,7 @@
         }
 
         /* ===== TOUCH FRIENDLY ===== */
-        @media (hover: none) {
-            .menu-card:hover {
-                transform: none;
-                box-shadow: none;
-            }
-            .menu-card:active {
-                transform: scale(0.98);
-                transition-duration: 0.1s;
-            }
-        }
+        /* Touch-friendly hover overrides moved to mobile perf section above */
 
         /* ===== SAFE AREA FOR NOTCH DEVICES ===== */
         @supports (padding: env(safe-area-inset-top)) {
@@ -2717,6 +2702,72 @@
             }
         }
 
+        /* ===== COOKIE CONSENT ===== */
+        .cookie-consent {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100000;
+            background: rgba(8, 12, 20, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(212, 175, 55, 0.08);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            transform: translateY(100%);
+            transition: transform 0.5s var(--ease-out-expo);
+        }
+        .cookie-consent.show { transform: translateY(0); }
+        .cookie-consent p {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin: 0;
+            flex: 1 1 200px;
+            text-align: center;
+        }
+        .cookie-consent p a { color: var(--accent-gold); text-decoration: underline; }
+        .cookie-btn {
+            padding: 6px 20px;
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-sans);
+            transition: all 0.3s var(--ease-spring);
+        }
+        .cookie-btn-accept {
+            background: var(--accent-gradient);
+            color: var(--bg-primary);
+        }
+        .cookie-btn-accept:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,175,55,0.15); }
+        .cookie-btn-decline {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+        }
+        .cookie-btn-decline:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+
+        /* ===== PERFORMANCE: DISABLE HEAVY EFFECTS ON MOBILE ===== */
+        @media (hover: none) and (pointer: coarse) {
+            .menu-card:hover { transform: none; box-shadow: none; }
+            .menu-card:active { transform: scale(0.97); transition-duration: 0.1s; }
+            .badge-tag { animation: none !important; }
+            .hero-bg-image { transition: none !important; transform: none !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -2724,7 +2775,7 @@
     <!-- ===== LOADING ===== -->
     <div id="loading-screen">
         <div class="loader-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="44"/></svg></div>
-        <img src="images/logo.webp" alt="Sunset Cafe" style="width:64px;height:64px;object-fit:contain;margin:0 auto 8px;border-radius:12px;" />
+        <img src="images/logo.webp" alt="Sunset Cafe" style="width:64px;height:64px;object-fit:contain;margin:0 auto 8px;border-radius:12px;" decoding="async" width="64" height="64" />
         <div class="loader-logo">Sunset<span>Cafe</span></div>
         <div class="loader-progress"><div class="bar"></div></div>
         <div class="loader-text" data-i18n="loaderText">Preparing your experience</div>
@@ -2739,7 +2790,7 @@
         <div class="container">
             <div class="header-inner">
                 <a href="#" class="header-brand" aria-label="Sunset Cafe home">
-                    <span class="brand-icon"><img src="images/logo.webp" alt="Sunset Cafe Logo" style="width:100%;height:100%;object-fit:contain;border-radius:8px;" /></span>
+                    <span class="brand-icon"><img src="images/logo.webp" alt="Sunset Cafe Logo" style="width:100%;height:100%;object-fit:contain;border-radius:8px;" decoding="async" width="38" height="38" /></span>
                     <span class="brand-name">Sunset<span>Cafe</span></span>
                     <span class="brand-badge"><i class="fas fa-qrcode"></i> QR</span>
                     <span class="live-indicator"><span class="pulse-dot"></span> Live</span>
@@ -2774,7 +2825,7 @@
         <div class="hero-glow glow-1"></div>
         <div class="hero-glow glow-2"></div>
         <div class="hero-content">
-            <div class="hero-logo"><img src="images/logo.webp" alt="Sunset Cafe Logo" style="width:100%;height:100%;object-fit:contain;border-radius:16px;" /></div>
+            <div class="hero-logo"><img src="images/logo.webp" alt="Sunset Cafe Logo" style="width:100%;height:100%;object-fit:contain;border-radius:16px;" decoding="async" fetchpriority="high" width="90" height="90" /></div>
             <h1 class="hero-title">Sunset <span class="gold-text">Cafe</span></h1>
             <div class="hero-badge-inline">
                 <span class="hero-badge">
@@ -2847,7 +2898,7 @@
 
             <div class="about-grid">
                 <div class="about-text">
-                    <img src="images/sunset.webp" alt="Sunset Cafe" style="width:100%;max-width:420px;border-radius:var(--radius-lg);margin-bottom:20px;box-shadow:var(--shadow-lg);" loading="lazy" />
+                    <img src="images/sunset.webp" alt="Sunset Cafe" style="width:100%;max-width:420px;border-radius:var(--radius-lg);margin-bottom:20px;box-shadow:var(--shadow-lg);" loading="lazy" decoding="async" width="420" height="263" />
                     <p data-i18n="aboutP1">Nestled in the heart of Addis Ababa, Sunset Cafe is a celebration of Ethiopian warmth and global culinary artistry. We are proud to introduce a premium digital QR menu system, bringing a seamless dining experience to our guests.</p>
                     <p data-i18n="aboutP2">Every dish tells a story — from our slow-cooked traditional fare to our hand-crafted pastries and premium coffee. Each ingredient is chosen with care, and every plate is a work of art.</p>
                     <div class="about-stats">
@@ -2940,6 +2991,13 @@
 
     <!-- ===== BACK TO TOP ===== -->
     <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
+
+    <!-- ===== COOKIE CONSENT ===== -->
+    <div class="cookie-consent" id="cookieConsent">
+        <p>🍪 We use cookies to enhance your experience. By continuing, you agree to our use of cookies. <a href="#">Learn more</a></p>
+        <button class="cookie-btn cookie-btn-accept" id="cookieAccept">Accept All</button>
+        <button class="cookie-btn cookie-btn-decline" id="cookieDecline">Decline</button>
+    </div>
 
     <!-- ===== DETAIL MODAL ===== -->
     <div class="detail-modal-overlay" id="detailModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalName">
@@ -5478,11 +5536,13 @@
         }
 
         function getItemImage(item) {
-            // Try local images/ folder first, then item.image (Unsplash/admin), then fallback
+            // Use item.image (admin-uploaded or Unsplash) as primary if it exists
+            if (item.image && item.image.trim()) return item.image;
+            // Try local images/ folder as fallback
             return `images/${item.id}.webp`;
         }
         function getFallbackImage(item) {
-            return (item.image && item.image.trim()) ? item.image : '';
+            return '';
         }
 
         function getTranslation(key) {
@@ -5645,7 +5705,7 @@
                         <div class="card-placeholder">
                             <div class="placeholder-bg"></div>
                             ${badgeTag ? `<span class="badge-tag">${badgeTag}</span>` : ''}
-                            <img src="${imgSrc}" alt="${displayName}" class="card-img" data-fallback="${getFallbackImage(item)}" onerror="if(this.dataset.triedFallback!=='1'&&this.dataset.fallback){this.dataset.triedFallback='1';this.src=this.dataset.fallback;}else{this.style.display='none';this.parentElement.querySelector('.fallback-icon').style.display='flex';}" loading="lazy" />
+                            <img src="${imgSrc}" alt="${displayName}" class="card-img" onerror="this.style.display='none';this.parentElement.querySelector('.fallback-icon').style.display='flex';" loading="lazy" decoding="async" />
                             <div class="fallback-icon" style="display:none;"><i class="fas fa-utensils"></i><span>${fallbackText}</span></div>
                             <span class="badge-price">ETB ${item.price}</span>
                         </div>
@@ -5990,14 +6050,16 @@
             }
         });
 
-        // Live sync: fetch self with cache-busting every 10 seconds
-        // This detects changes pushed by admin to GitHub Pages
+        // Live sync: lightweight polling every 60 seconds (was 10s, too aggressive)
         let _lastMenuHash = '';
+        let _syncAbort = null;
         if (menuData.length) _lastMenuHash = menuData.map(i => i.id + i.name + i.price).join('|');
         setInterval(async () => {
             try {
+                if (_syncAbort) _syncAbort.abort();
+                _syncAbort = new AbortController();
                 const url = location.href.split('?')[0] + '?_t=' + Date.now();
-                const resp = await fetch(url, { cache: 'no-store', headers: { 'Accept': 'text/html' } });
+                const resp = await fetch(url, { cache: 'no-store', headers: { 'Accept': 'text/html' }, signal: _syncAbort.signal });
                 if (!resp.ok) return;
                 const html = await resp.text();
                 const match = html.match(/<script id="menu-data" type="application\/json">\s*([\s\S]*?)\s*<\/script>/i);
@@ -6014,7 +6076,7 @@
                     showToast('🔄 Menu updated live!', 'info');
                 }
             } catch (_) {}
-        }, 10000);
+        }, 60000);
 
         // ============================================================
         // AOS
@@ -6022,6 +6084,22 @@
         if (window.AOS) {
             AOS.init({ duration: 600, easing: 'ease-out-expo', once: true, mirror: false, offset: 30, delay: 30 });
         }
+
+        // ============================================================
+        // COOKIE CONSENT
+        // ============================================================
+        (function() {
+            const consentEl = document.getElementById('cookieConsent');
+            const consentKey = 'sunset_cookie_consent';
+            if (!consentEl || localStorage.getItem(consentKey)) return;
+            setTimeout(() => consentEl.classList.add('show'), 2000);
+            const hide = () => { consentEl.classList.remove('show'); localStorage.setItem(consentKey, 'accepted'); };
+            document.getElementById('cookieAccept').addEventListener('click', hide);
+            document.getElementById('cookieDecline').addEventListener('click', () => {
+                consentEl.classList.remove('show');
+                localStorage.setItem(consentKey, 'declined');
+            });
+        })();
 
         // ============================================================
         // BOOT — with SAFETY FALLBACKS for loading screen
